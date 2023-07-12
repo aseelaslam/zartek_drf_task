@@ -9,5 +9,6 @@ urlpatterns = [
     path('rides/<int:pk>/start/', RideStartView.as_view(), name='ride-start'),
     path('rides/<int:pk>/complete/', RideCompleteView.as_view(), name='ride-complete'),
     path('rides/<int:pk>/cancel/', RideCancelView.as_view(), name='ride-cancel'),
+    path('rides/accept/', AcceptRideView.as_view(), name='accept-ride'),
 
 ]
