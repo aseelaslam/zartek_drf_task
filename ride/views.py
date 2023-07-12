@@ -1,13 +1,14 @@
 from django.shortcuts import render
 
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions,status,generics
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from .models import User,Ride
 from .serializers import UserRegistrationSerializer, UserLoginSerializer,RideSerializer
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework.exceptions import ValidationError
+
  
 
 
@@ -59,3 +60,29 @@ class RideListCreateView(generics.ListCreateAPIView):
 class RideRetrieveView(generics.RetrieveAPIView):
     queryset = Ride.objects.all()
     serializer_class = RideSerializer
+
+
+
+class RideStartView(generics.UpdateAPIView):
+    queryset = Ride.objects.all()
+    serializer_class = RideSerializer
+
+    def perform_update(self, serializer):
+        serializer.instance.status = 'started'
+        serializer.save()
+
+class RideCompleteView(generics.UpdateAPIView):
+    queryset = Ride.objects.all()
+    serializer_class = RideSerializer
+
+    def perform_update(self, serializer):
+        serializer.instance.status = 'completed'
+        serializer.save()
+
+class RideCancelView(generics.UpdateAPIView):
+    queryset = Ride.objects.all()
+    serializer_class = RideSerializer
+
+    def perform_update(self, serializer):
+        serializer.instance.status = 'cancelled'
+        serializer.save()
