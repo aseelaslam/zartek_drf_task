@@ -1,0 +1,23 @@
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+
+# DRF
+media/
+static/
+
+# Editor/IDE
+.vscode/
+.idea/
+
+# Environment
+.env
+
+# Database
+db.sqlite3
+
+# Other
+*.swp
