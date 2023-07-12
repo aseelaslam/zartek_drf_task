@@ -30,3 +30,7 @@ class RideSerializer(serializers.ModelSerializer):
         model = Ride
         fields = '__all__'
         
+class RideStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ride
+        fields = ['status']

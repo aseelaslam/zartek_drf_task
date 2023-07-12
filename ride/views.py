@@ -6,8 +6,11 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from .models import User,Ride
-from .serializers import UserRegistrationSerializer, UserLoginSerializer,RideSerializer
+from .serializers import UserRegistrationSerializer, UserLoginSerializer,RideSerializer,RideStatusSerializer
 from rest_framework.views import APIView
+
+from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 
 from .tasks import update_ride_location
@@ -74,29 +77,22 @@ class RideRetrieveView(generics.RetrieveAPIView):
 
 
 
-class RideStartView(generics.UpdateAPIView):
+
+
+class RideStatusUpdateView(generics.UpdateAPIView):
     queryset = Ride.objects.all()
-    serializer_class = RideSerializer
+    serializer_class = RideStatusSerializer
 
-    def perform_update(self, serializer):
-        serializer.instance.status = 'started'
-        serializer.save()
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        data = {'status': request.data.get('status')}
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
 
-class RideCompleteView(generics.UpdateAPIView):
-    queryset = Ride.objects.all()
-    serializer_class = RideSerializer
 
-    def perform_update(self, serializer):
-        serializer.instance.status = 'completed'
-        serializer.save()
-
-class RideCancelView(generics.UpdateAPIView):
-    queryset = Ride.objects.all()
-    serializer_class = RideSerializer
-
-    def perform_update(self, serializer):
-        serializer.instance.status = 'cancelled'
-        serializer.save()
 
 
 def start_ride_tracking(request, ride_id):
