@@ -17,6 +17,17 @@ from .tasks import update_ride_location
 
 from rest_framework.permissions import IsAuthenticated
 
+from rest_framework.authtoken.models import Token
+
+from django.http import JsonResponse
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+import requests
+
+
+
+
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
@@ -103,17 +114,35 @@ def start_ride_tracking(request, ride_id):
 
 
 
+
+
+
+
+
 class AcceptRideView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
     def post(self, request):
-        driver = request.user  
-        ride_id = request.data.get('ride_id')
+        headers = {
+            'Authorization': f'Token {request.auth}',
+            'Content-Type': 'application/json'
+        }
 
-        try:
-            ride = Ride.objects.get(id=ride_id, driver=None)  
-        except Ride.DoesNotExist:
-            return Response({'message': 'Ride not found or already assigned to a driver'}, status=400)
+        data = {
+            'ride_id': request.data.get('ride_id')
+        }
+
+        response = requests.post('http://localhost:8000/rides/accept/', headers=headers, json=data)
+
+
+        if response.status_code == 200:
+            # Ride accepted successfully
+            return JsonResponse({'message': 'Ride accepted'})
+        else:
+            # Error occurred while accepting the ride
+            return JsonResponse({'message': 'Failed to accept ride'}, status=400)
+
         
 
 
