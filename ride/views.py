@@ -9,18 +9,14 @@ from .models import User,Ride
 from .serializers import UserRegistrationSerializer, UserLoginSerializer,RideSerializer,RideStatusSerializer
 from rest_framework.views import APIView
 
-from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
 
 from .tasks import update_ride_location
 
-from rest_framework.permissions import IsAuthenticated
 
-from rest_framework.authtoken.models import Token
 
 from django.http import JsonResponse
-from rest_framework.views import APIView
+
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 import requests
