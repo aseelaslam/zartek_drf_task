@@ -24,10 +24,7 @@ import requests
 
 
 
-from django.test import TestCase
-from django.urls import reverse
-from django.contrib.auth.models import User
-from rest_framework.test import APIClient
+
 
 
  
@@ -116,71 +113,22 @@ def start_ride_tracking(request, ride_id):
 
 
 class AcceptRideView(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
-
     def post(self, request):
-        headers = {
-            'Authorization': f'Token {request.auth}',
-            'Content-Type': 'application/json'
-        }
+        ride_id = request.data.get('ride_id')
+        try:
+            ride = Ride.objects.get(id=ride_id)
+        except Ride.DoesNotExist:
+            return Response({'message': 'Ride not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        data = {
-            'ride_id': request.data.get('ride_id')
-        }
-
-        response = requests.post('http://localhost:8000/rides/accept/', headers=headers, json=data)
+        ride.driver = request.user  # Assuming authenticated user is the driver
+        ride.save()
+        return Response({'message': 'Ride accepted successfully'}, status=status.HTTP_200_OK)
 
 
-        if response.status_code == 200:
-            # Ride accepted successfully
-            return JsonResponse({'message': 'Ride accepted'})
-        else:
-            # Error occurred while accepting the ride
-            return JsonResponse({'message': 'Failed to accept ride'}, status=400)
 
         
 
 
 
 
-class RideModelTestCase(TestCase):
-    def setUp(self):
-        self.user1 = User.objects.create(username='user1')
-        self.user2 = User.objects.create(username='user2')
-        self.ride = Ride.objects.create(rider=self.user1, pickup_location='Location 1', dropoff_location='Location 2')
 
-    def test_ride_creation(self):
-        ride = Ride.objects.get(id=self.ride.id)
-        self.assertEqual(ride.rider, self.user1)
-        self.assertEqual(ride.pickup_location, 'Location 1')
-        self.assertEqual(ride.dropoff_location, 'Location 2')
-        self.assertIsNone(ride.driver)
-
-    def test_ride_list_api(self):
-        client = APIClient()
-        url = reverse('ride-list')
-        response = client.get(url)
-        rides = Ride.objects.all()
-        serializer = RideSerializer(rides, many=True)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer.data)
-
-
-class AcceptRideAPITestCase(TestCase):
-    def setUp(self):
-        self.user1 = User.objects.create(username='user1')
-        self.user2 = User.objects.create(username='user2')
-        self.ride = Ride.objects.create(rider=self.user1, pickup_location='Location 1', dropoff_location='Location 2')
-
-    def test_accept_ride_api(self):
-        client = APIClient()
-        url = reverse('accept-ride')
-        data = {'ride_id': self.ride.id}
-        client.force_authenticate(user=self.user2)  # Authenticate as a driver
-        response = client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['message'], 'Ride accepted successfully')
-        self.ride.refresh_from_db()
-        self.assertEqual(self.ride.driver, self.user2)
-       

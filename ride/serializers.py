@@ -34,3 +34,8 @@ class RideStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ride
         fields = ['status']
+
+class RideSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ride
+        fields = ['id', 'rider', 'pickup_location', 'dropoff_location', 'driver']        
